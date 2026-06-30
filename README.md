@@ -8,7 +8,7 @@ Additionally, I wanted to take what I learned in my recent classes and implement
 ## Current Features:
 N/A, still developing the core stuff 
 
-## Progress (07/28/26):
+## Progress (06/30/26):
 - extracted csvs for skaters from NHL seasons 1998-2026
 - built an end-to-end prediction pipeline for the Rocket Richard award (not directly influenced by the highest # of goals which is the direct statistic)
     -can predict winner only, or the top 3 finalists for the award

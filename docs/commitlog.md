@@ -21,10 +21,10 @@
     - I may also look into using SHAP, LIME or Yellowbrick to visualize the influence of features to the overall prediction for all awards, not just rocket richard
 
 
-07/24/26
+06/24/26
 - model works and predicts end to end, but either SUCKS at predicting or just doesn't outright predict at all
 
-07/28/26
+06/28/26
 - the prediction was fixed by adding the "class_weight='balanced'" line in the LogisticRegression object, essentially this ensures that minority classes are penalized heavier than majority classes; this is done because this is a heavily imbalanced dataset (there can only be 1 winner out of the ~900 eligible players)
 - this resulted in the predictions going from one really bad prediction to 5 really good predictions (see the REPORT section below)
 - one of these predictions was Auston Matthews (who was the winner of the 2023 rocket richard), therefore TECHNICALLY predicted the winner correctly
