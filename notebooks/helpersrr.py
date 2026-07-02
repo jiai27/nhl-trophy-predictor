@@ -16,6 +16,8 @@ def clear_csv(csv_path):
     df = pd.read_csv(csv_path, encoding='ascii')
     df = df.dropna()
     return df
+
+
 def extractPlayerID(url):
     '''
     purpose:    parses a url and returns that player's id (used by the NHL API) 
@@ -25,6 +27,8 @@ def extractPlayerID(url):
     #every player ID used by the NHL website and API is 7 digits long
     split = url.rsplit("-")
     return split[-1]
+
+
 def placeToStats(place_list):
     '''
     purpose:    takes a list of players from the webscraped csv and returns a list of the stats of players in the list
@@ -48,6 +52,8 @@ def placeToStats(place_list):
         id = extractPlayerID(playerTuple[0])
         ids.append((seasons[i],id))
     return ids
+
+
 def fetchSkaterStats(year, csv=False, edge = False):
     '''
     purpose:        fetches all summary skater stats of a given year and compresses into the desired format
@@ -110,12 +116,16 @@ def fetchSkaterStats(year, csv=False, edge = False):
             df.to_csv(f'../data/api/skaters/skaters{year_interval}.csv',index=False)
     else:
         return df
-def labelWinners(year, rank=False):
-
-
+    
+def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False):       #modified version of labelwinners for rr2
     '''
     purpose:    fetches a dataset of skaters and adds two columns: average TOI (extra feature) and either rrWinner or rrRank (target features) 
-    parameters: year (string) of a valid RR winner year; in yyyy or yyyyyyyy format and rank (boolean) if the dev wants labels to be one-hot encoded OR ranked by top 3 finalists
+    parameters: -year (string) of a valid RR winner year; in yyyy or yyyyyyyy format
+                -first_ids (list), a list of player_ids (strings) that won the award in question 
+                -second_ids (list), a list of player_ids (strings) that were runner-ups of the award in question
+                -third_ids (list), a list of player_ids (strings) that were third place finalists of the award in question
+                -rank (boolean) if the dev wants labels to be one-hot encoded OR ranked by top 3 finalists
+                -edge (boolean) if the dev is labeling winners on the combined EDGE set
     returns:    returns a dataframe of the selected year skaters with the labeled RR winner/finalists
     '''
     #format year for the filter (is a string when inputted)
@@ -128,8 +138,17 @@ def labelWinners(year, rank=False):
     else:
         raise SyntaxError("requires yyyy or yyyyyyyy format of season year")
     
-    csv_path = f"../data/api/skaters/skaters{year_interval}.csv"
-    df = pd.read_csv(csv_path)
+    if edge == True:
+        csv_path = f"../data/api/EDGEstats/skatersEDGE{year_interval}.csv"
+        df = pd.read_csv(csv_path)
+        regularDf = fetchSkaterStats(year=year, csv=False, edge=False)     #then combine it with regular GSS
+        df = regularDf.merge(df)
+
+    else:
+        csv_path = f"../data/api/skaters/skaters{year_interval}.csv"
+        df = pd.read_csv(csv_path)
+
+
 
     #add averageTOI
     df['averageTOI'] = np.zeros(df.shape[0])
@@ -173,6 +192,7 @@ def labelWinners(year, rank=False):
                 finalist = third[1]
                 df.loc[df['playerId'] == int(finalist), 'rrRank'] = 3
     return df
+
 def formatEdgeStats(individual_stat, shotDetails = False):
     '''
     purpose:    takes a dictionary representing a player's comprehensive EDGE stats, and format them for a better overall feature-set
