@@ -40,3 +40,5 @@ notes for formatEdgeStats on what to format and extract from the full player EDG
     - added skater EDGE stats to data/api/EDGEstats from 2021-2026 since 2021 is when EDGE stats started getting collected
         - the idea is to keep the EDGE stats and General Skater Stats separate in those folders, then are actually merged together in the notebook/final model script
     - milestone 1 of rr2 is complete, next commit will be either all milestones of rr2 finished or one of them completed
+    - it should be noted that the process of extracting the EDGE stats was a lot more lengthy since the functions weren't optimized, roughly 30 minutes total (should work on this in future API collections)
+    - once I can confidently say the Rocket Richard Pipeline is properly produced, its roughly the same process for a lot of other awards, so the first hurdle is typically the hardest one the way I'm seeing it

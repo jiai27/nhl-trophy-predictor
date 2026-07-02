@@ -8,16 +8,13 @@ Additionally, I wanted to take what I learned in my recent classes and implement
 ## Current Features:
 N/A, still developing the core stuff 
 
-## Progress (06/30/26):
-- extracted csvs for skaters from NHL seasons 1998-2026
-- built an end-to-end prediction pipeline for the Rocket Richard award (not directly influenced by the highest # of goals which is the direct statistic)
-    -can predict winner only, or the top 3 finalists for the award
-    -includes feature sets, training/testing splits and lots of experimentation with models for this award
-    -more on the decisions and results can be found in commitlog.md
+## Progress (07/01/26):
+- made formatEdgeStats() a helper function that does the below:
+- extracted csvs for EDGE Stats of skaters from NHL seasons 2021-present into data/api/EDGEstats (since EDGE stats started being collected 2021)
+- moved all helper functions to 'helpersrr.py', some functions will be recycled for other awards
 
 ## What's Next:
-- fine tuning to the Rocket Richard Prediction Pipeline
-- look to include EDGE statistics to find if it is worth incorporating for the other awards
-- look into using either SHAP, LIME or Yellowbrick to visualize feature influences in the prediction model
+- continue fine tuning to the Rocket Richard Prediction Pipeline -> specifically use the newly collected EDGE stats
+- look into using either SHAP, LIME or Yellowbrick to visualize feature influences in the prediction model - only applicable for supported models
 - get the rocket richard prediction pipeline relatively finished and recycle pre-processing code for other award pipelines
 - put all final code needed for the Rocket Richard award put into a singular python script instead of a notebook (once model is fully fine-tuned)
