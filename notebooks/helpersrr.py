@@ -54,7 +54,7 @@ def placeToStats(place_list):
     return ids
 
 
-def fetchSkaterStats(year, csv=False, edge = False):
+def fetchSkaterStats(year, csv=False, edge = False, versionA = False):
     '''
     purpose:        fetches all summary skater stats of a given year and compresses into the desired format
     parameters:     year (string), csv (boolean)
@@ -88,7 +88,11 @@ def fetchSkaterStats(year, csv=False, edge = False):
             new_df = []
             for id in ids:
                 individual_stat = client.edge.skater_detail(player_id=id, season=year_interval)
-                formatted_stat = formatEdgeStats(individual_stat=individual_stat,shotDetails=True)  #get their edge stats
+                
+                if versionA == False:
+                    formatted_stat = formatEdgeStats(individual_stat=individual_stat,shotDetails=True)  #get their edge stats
+                else:
+                    formatted_stat = formatEdgeStats(individual_stat=individual_stat,shotDetails=False)
                 new_df.append(formatted_stat)
             
             df = pd.DataFrame()
@@ -117,7 +121,7 @@ def fetchSkaterStats(year, csv=False, edge = False):
     else:
         return df
     
-def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False):       #modified version of labelwinners for rr2
+def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False, versionA = False):       #modified version of labelwinners for rr2
     '''
     purpose:    fetches a dataset of skaters and adds two columns: average TOI (extra feature) and either rrWinner or rrRank (target features) 
     parameters: -year (string) of a valid RR winner year; in yyyy or yyyyyyyy format
@@ -143,12 +147,34 @@ def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False)
         df = pd.read_csv(csv_path)
         regularDf = fetchSkaterStats(year=year, csv=False, edge=False)     #then combine it with regular GSS
         df = regularDf.merge(df)
+        print("1: ",df.columns())
+        if versionA == True:
+            df = df.drop(columns=[
+                'Behind the Net Shots',
+                        'Beyond Red Line Shots',
+                        'Center Point Shots',
+                        'Crease Shots',
+                        'High Slot Shots',
+                        'L Circle Shots',
+                        'L Corner Shots',
+                        'L Net Side Shots',
+                        'L Point Shots',
+                        'Low Slot Shots',
+                        'Offensive Neutral Zone Shots',
+                        'Outside L Shots',
+                        'Outside R Shots',
+                        'R Circle Shots',
+                        'R Corner Shots',
+                        'R Net Side Shots',
+                        'R Point Shots'
+                        ]
+            )
 
     else:
         csv_path = f"../data/api/skaters/skaters{year_interval}.csv"
         df = pd.read_csv(csv_path)
 
-
+    print("2: ",df.columns())
 
     #add averageTOI
     df['averageTOI'] = np.zeros(df.shape[0])
