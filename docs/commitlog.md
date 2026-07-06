@@ -6,49 +6,79 @@
 - made a new file 'helpersrr.py' to hold all helper functions originally made in rr and rr1
 - rr2.ipynb is where I'm testing models using GSS + full EDGE stats
 
-07/05/26
+07/06/26
 - rr2.ipynb
     - Thoughts before Implementing things
-        - since I found EDGE Ver. A to be inferior to Ver. B, I want to fine tune a couple other models such as Stochastic Gradient Descent (which will be implemented in rr2.ipynb)
-        - I want to ensure the Rocket Richard Predictor is in the most optimized/fine-tuned state it can be before I move onto other awards because writing the final script for this award is not only the most important part, but the structure of predicting awards will be relatively the same across the board, so the whole data preprocessing/model training and predictions found in the rr notebooks can be generalized. Additionally I'd like the most optimal version of the RR Predictor to be the baseline model for the other awards.
-        - According to research I've done regarding what sort of models are used in actual sports analytics, Tree-based algorithms and Support Vector Machines (as well as Logistic Regression) come up a lot, I will be testing these models for the sake of fine tuning: Random Forests, XGBoost
-        - I've also started a second markdown file in the docs folder called 'rrResults.md' containing a table providing a summary of my findings so far
-    - REPORT on RandomForest and EDGE Ver.B:
+        - I figured doing testing on all 5 seasons of the EDGE seasons is necessary to compare metrics of the model performance, so I am doing that here for EDGE Ver. A
+        - I've decided to continue fine tuning the model to now exploring using a Gradient Boosting algorithm, this is mainly due to my research finding that a lot of sports analytics models best perform on tabular data using Logistic Regression, Random Forests or XGBoosting algorithms, since I've already tested 2/3, I'd like to explore the last one
+        - between scikit-learn's GradientBoostingClassifier() and HistGradientBoostingClassifier(), I'll be choosing the former since the documentation specifies the latter model works better for larger datasets (n_samples >= 10k)
+    - REPORT on EDGE Ver.A fully:
         - 2021-2022
-            - top1: RandomForest predicted nothing, LogReg predicted 4 players, one of which was the actual winner (Johnny Gaudreau, **Auston Matthews** , Matthew Tkachuk, Jake Guentzel)
-            - top3: RandomForest and LogisticRegression predicted the same players in the same placements:
+            - top1: predicted 2 players, Johnny Gaudreau and **Auston Matthews**
+            - top3: same predictions as RR#2
                 - winner: Auston Matthews (correct)
                 - runner-up: Leon Draisaitl (correct)
                 - finalist: Evgeny Kuznetsov (incorrect, didn't make top 3)
+            - 'goals' had the highest weight at 0.409 for top 1
+            - 'assists' had the highest weight at 0.107 for top 3
         - 2022-2023
-            - top1: RandomForest predicted nothing, LogisticRegression predicted 1 player (David Pastrnak, wrong)
-            - top3: both RandomForest and LogisticRegression predicted 3/3 correctly:
+            - top1: same prediction as RR#2, 1 player (David Pastrnak, wrong)
+            - top3: same predictions as RR#2 (EDGE Ver.B)
                 - winner: Connor McDavid (correct)
                 - runner-up: David Pastrnak (correct)
                 - finalist: Mikko Rantenen (correct)
+            - interestingly, this season had the 'goals' feature more prominent than 2023-2024
         - 2023-2024
-            - top1: RandomForest predicted nothing, LogisticRegression predicted 2 players, Nathan Mackinnon and Auston Matthews (actual winner)
-            - top3: both RandomForest and LogisticRegression on GSS + full EDGE had the exact same predictions:
+            - top1: predicted Auston Matthews (actual winner, so coorrect)
+            - top3: same predictions as RR#2 (EDGE Ver.B)
                 - winner: Auston Matthews (correct)
                 - runner-up: Sam Reinhart (correct)
                 - finalist: Steven Stamkos (incorrect, didn't make top 3)
+            - this season had the 'assists' feature have the most weight for top 3 and 'topShotSpeed' have the most weight for top 1
         - 2024-2025
-            - top1: neither model made a prediction (not good)
-            - top3: both RandomForest and LogReg made the exact same 4 predictions: - this is fine that 4 predictions were made since third place had a 2 way tie, so 4 players were finalists this year
+            - top1: predicted nothing (not good)
+            - top3: same predictions as RR#2 (EDGE Ver.B)
+            - this is fine that 4 predictions were made since third place had a 2 way tie, so 4 players were finalists this year
                 - winner: Leon Draisaitl (correct)
                 - runner-up: Mark Schiefele (incorrect, didn't make top 3)
                 - finalist: John Tavares (incorrect, didn't make top 3)
                 - alternative finalist: Alex Ovechkin (correct)
         - 2025-2026
-            - top1: EDGE Ver. B predicted correctly, RandomForest() didn't predict at all
-            - top3: both RandomForest and LogisticRegression on GSS + full EDGE had the same exact predictions
+            - top1: predicted 2 players, **Nathan Mackinnon**, Jake Guentzel
+            - top3: same predictions as RR#2 (EDGE Ver.B)
                 - winner: Nathan Mackinnon (correct)
                 - runner-up: Jake Guentzel (incorrect, didn't make top 3)
                 - finalist: Connor McDavid (correct)
         - Summary
-            - this time after testing on all possible EDGE stat seasons, the EDGE Ver. B still outperformed the RandomForest model overall since the RandomForest model failed to make predictions on any top 1 query, but always made identical predictions to the current optimal model on top 3 queries which is quite interesting
+            - EDGE Ver.A had all of the same top 3 predictions as EDGE Ver.B and slightly different top 1 predictions
             - actual accuracies calculated are as follows:
-                - top 1 LogReg: (1/4) + (0/1) + (1/2) + (0/1) + (1/1) = 3/9 = ~33%
-                - top 1 RandomForest: 0/5 -> 0%
-                - top 3 LogReg: (2/3) + (3/3) + (2/3) + (2/4) + (2/3) = 11/16 = 
-                - top 3 RandomForest: same as logreg: 11/16 = ~68.75%
+                - top 1 EDGE Ver. A: (1/2) + (0/1) + (1/1) + (0/1) + (1/2) = 3/7 = 0.42857 -> 42.9% 
+                - top 3 EDGE Ver. A: = 68.8%
+    - REPORT on GradientBoostingClassifier()
+        - 2021-2022
+            - top1: predicted 3 players (Johnny Gaudreau, Matthew Tkachuk, Jake Guentzel), none of which were the actual winners
+            - top3: same predictions as RR#3 (EDGE Ver. A)
+        - 2022-2023
+            - top1: predicted 2 players (David Pastrnak, Mikko Rantenen) neither of which are correct, but they ARE finalists!
+            - top3: same predictions as RR#2/RR#3 (all correctly ranked)
+        - 2023-2024
+            - top1: predicted 3 players: Nathan Mackinnnon, **Auston Matthews**, Adrian Kempe
+            - top3: same predictions as RR#2/RR#3 (2/3 correctly ranked)
+        - 2024-2025
+            - top1: predicted nothing (not good)
+            - top3: same predictions as RR#2/RR#3 (2/4 correctly ranked)
+        - 2025-2026
+            - top1: same predictions as RR#2/RR#3
+            - top3: same predictions as RR#2/RR#3 (2/3 correctly ranked)
+        - Summary
+            - once again a lot of similarities with the other models, and seems to be ever so slightly more inferior to the LogReg EDGE Versions A and B, but superior to the RandomForest model
+            - actual accuracies calculated are as follows:
+                - top1: (0/3) + (0/2) + (1/3) + (0/1) + (1/2) = 2/11 = 0.1818 -> 18.2%
+                - top3: EDGE Ver.A = 68.8%
+    - Overall, the new model I introduced is inferior to the previous model I had thoroughly tested over all 5 EDGE seasons, which in fact that model, EDGE Ver.A is now the most optimal one
+    - Some interesting findings were that the LogReg, RandomForest and GradientBoostingClassifier all had the exact same predictions of top 3 rankings across the board and the top1 prediction for 2024-2025 never had a prediction
+    - I have two choices now:
+        1. continue fine tuning the most optimal model (RR#3) and move on
+        2. move on with RR#3 
+    - I'm leaning more towards option 2 since I'd like to see how this model performs on other awards, as well as continue so I can generalize the overall model training and testing scripts for all other awards.
+    - Though I would like to see if adding/removing features that were strong in EDGE Ver.B will change anything

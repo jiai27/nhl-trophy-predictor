@@ -1,9 +1,10 @@
 | Date Logged/Tested | Experiment Number & Award | Features | Model | Season(s) Tested (Total) | Top-1 Acc% | Top-3 Acc% | Notes
 |---|---|---|---|---|---|---|---|
 |06/28/26| RR#1 | GSS only | LogisticRegression() | 2023-2026 (3)| *20% | *44% | Baseline Model
-|07/02/26| RR#2 | GSS + EDGE | LogisticRegression() | 2021-2026 (5) | 33% | 68.8% | EDGE Model Ver.B (best so far)
-|07/03/26| RR#3 | GSS + part. EDGE | LogisticRegression() | 2025-2026 (1) | *50% | 66% | EDGE Model Ver.A
+|07/02/26| RR#2 | GSS + EDGE | LogisticRegression() | 2021-2026 (5) | 33% | 68.8% | EDGE Model Ver.B
+|**07/03/26**| **RR#3** | **GSS + part. EDGE** | **LogisticRegression()** | **2021-2026 (5)** | **42.9%** | **68.8%** | **EDGE Model Ver.A (best so far)**
 |07/05/26 | RR#4 | GSS + EDGE | RandomForest() | 2021-2026 (5) | 0% | 68.8% | same top3 predictions as RR#2 |
+|07/06/26| RR#5 | GSS + EDGE | GradientBoostingClassifier() | 2021-2026 (5) | 18.2% | 68.8% | uses default hyperparameters |
 
 <!-- | .. | ... | ... | ... | ... | ... | ... | placeholder | --> 
 
@@ -26,13 +27,8 @@
         - 2023-2024: predicted 2/3 of the finalists correctly, but only 1/3 were placed in top 3 correctly
         - 2024-2025: predicted 2/3 of the finalists correctly, but only 1/3 were placed in top 3 correctly
         - 2025-2026: predicted 2/3 of the finalists correctly, placed 2/3 of in the top 3 correctly
-- RR#2:
-    - top1: predicted 1 player, Nathan Mackinnon (actual winner) 
-    - top3: predicted 3 players, 2/3 were predicted and placed correctly
-- RR#3:
-    - top1: predicted 2 players, Nathan Mackinnon (actual winner) and a non-finalist
-    - top3: same as RR#2
-    - should note: only tested on ONE EDGE season
+- RR#2 and RR#3 have more detailed records in their respective commits in commitlog.md
+
 - RR#4:
     - top1: predicted nothing for all 5 test seasons
     - top3: had the exact same predictions as RR#2 which is really interesting

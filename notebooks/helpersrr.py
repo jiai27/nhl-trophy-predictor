@@ -57,7 +57,7 @@ def placeToStats(place_list):
 def fetchSkaterStats(year, csv=False, edge = False, versionA = False):
     '''
     purpose:        fetches all summary skater stats of a given year and compresses into the desired format
-    parameters:     year (string), csv (boolean)
+    parameters:     year (string), csv (boolean), edge (boolean) indicating if you're
     returns:        a dataframe OR csv of all player stats of that given year
     '''
     year_df = []
@@ -144,12 +144,16 @@ def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False,
     
     if edge == True:
         csv_path = f"../data/api/EDGEstats/skatersEDGE{year_interval}.csv"
-        df = pd.read_csv(csv_path)
-        regularDf = fetchSkaterStats(year=year, csv=False, edge=False)     #then combine it with regular GSS
-        df = regularDf.merge(df)
+        edge_df = pd.read_csv(csv_path)    
+        if versionA == True:      
+            regularDf = fetchSkaterStats(year=year, csv=False, edge=False, versionA=True)     #then combine it with regular GSS
+        else:
+            regularDf = fetchSkaterStats(year=year, csv=False, edge=False)
+        edge_df = regularDf.merge(edge_df)
         #print("1: ",df.columns())
-        if versionA == True:
-            df = df.drop(columns=[
+        '''
+        if versionA == True:            #drop the additional columns
+            edge_df = edge_df.drop(columns=[
                 'Behind the Net Shots',
                         'Beyond Red Line Shots',
                         'Center Point Shots',
@@ -169,6 +173,9 @@ def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False,
                         'R Point Shots'
                         ]
             )
+        '''
+
+        df = edge_df
 
     else:
         csv_path = f"../data/api/skaters/skaters{year_interval}.csv"

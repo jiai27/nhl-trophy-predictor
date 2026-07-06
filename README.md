@@ -8,12 +8,12 @@ Additionally, I wanted to take what I learned in my recent classes and implement
 ## Current Features:
 N/A, still developing the core stuff 
 
-## Progress (07/05/26):
-- implemented a RandomForest model to test against, EDGE Ver.B still remains the most optimal
-- added a results document 
+## Progress (07/06/26):
+- tested on EDGE Ver.A fully and found it to be the most accurate model so far
+-  
 
 ## What's Next:
-- continue fine tuning to the Rocket Richard Prediction Pipeline
+- continue fine tuning to the Rocket Richard Prediction Pipeline 
 - look into using either SHAP, LIME or Yellowbrick to visualize feature influences in the prediction model - only applicable for supported models
 - get the rocket richard prediction pipeline relatively finished and recycle pre-processing code for other award pipelines
 - put all final code needed for the Rocket Richard award put into a singular python script instead of a notebook (once model is fully fine-tuned)
