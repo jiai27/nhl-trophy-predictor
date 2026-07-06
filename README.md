@@ -10,7 +10,8 @@ N/A, still developing the core stuff
 
 ## Progress (07/06/26):
 - tested on EDGE Ver.A fully and found it to be the most accurate model so far
--  
+- implemented a GradientBoostingModel() for the sake of fine tuning, is still inferior
+- updated results in docs/rrResults.md and findings can be found in docs/commitlog.md
 
 ## What's Next:
 - continue fine tuning to the Rocket Richard Prediction Pipeline 
