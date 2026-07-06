@@ -8,13 +8,12 @@ Additionally, I wanted to take what I learned in my recent classes and implement
 ## Current Features:
 N/A, still developing the core stuff 
 
-## Progress (07/01/26):
-- made formatEdgeStats() a helper function that does the below:
-- extracted csvs for EDGE Stats of skaters from NHL seasons 2021-present into data/api/EDGEstats (since EDGE stats started being collected 2021)
-- moved all helper functions to 'helpersrr.py', some functions will be recycled for other awards
+## Progress (07/05/26):
+- implemented a RandomForest model to test against, EDGE Ver.B still remains the most optimal
+- added a results document 
 
 ## What's Next:
-- continue fine tuning to the Rocket Richard Prediction Pipeline -> specifically use the newly collected EDGE stats
+- continue fine tuning to the Rocket Richard Prediction Pipeline
 - look into using either SHAP, LIME or Yellowbrick to visualize feature influences in the prediction model - only applicable for supported models
 - get the rocket richard prediction pipeline relatively finished and recycle pre-processing code for other award pipelines
 - put all final code needed for the Rocket Richard award put into a singular python script instead of a notebook (once model is fully fine-tuned)
