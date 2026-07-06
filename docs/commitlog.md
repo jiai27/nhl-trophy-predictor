@@ -4,11 +4,51 @@
 - rr.ipynb is a testing environment
 - rr1.ipynb is also a testing environment but with more direction and just to build the first pipeline baseline predictor
 - made a new file 'helpersrr.py' to hold all helper functions originally made in rr and rr1
+- rr2.ipynb is where I'm testing models using GSS + full EDGE stats
 
-07/03/26
+07/05/26
 - rr2.ipynb
-    - I want to try testing on the other 4 of the 5 EDGE Stat Seasons I can work with when I'm doing EDGE Model Ver. A (the one with all EDGE stats EXCEPT for the shots on goal details)
-    - after implementing the changes for Version A, the top 3 prediction did NOT change, but the top 1 prediction DID
-    - the top 1 prediction had 2 predictions overall, Nathan Mackinnon (true winner, therefore correct) and Jake Guentzel (not a finalist at all)
-    - so based off just the one test, version A is inferior in accuracy to version B
-    - therefore like predicted, we will still be going through with version B for future predictions for now
+    - Thoughts before Implementing things
+        - since I found EDGE Ver. A to be inferior to Ver. B, I want to fine tune a couple other models such as Stochastic Gradient Descent (which will be implemented in rr2.ipynb)
+        - I want to ensure the Rocket Richard Predictor is in the most optimized/fine-tuned state it can be before I move onto other awards because writing the final script for this award is not only the most important part, but the structure of predicting awards will be relatively the same across the board, so the whole data preprocessing/model training and predictions found in the rr notebooks can be generalized. Additionally I'd like the most optimal version of the RR Predictor to be the baseline model for the other awards.
+        - According to research I've done regarding what sort of models are used in actual sports analytics, Tree-based algorithms and Support Vector Machines (as well as Logistic Regression) come up a lot, I will be testing these models for the sake of fine tuning: Random Forests, XGBoost
+        - I've also started a second markdown file in the docs folder called 'rrResults.md' containing a table providing a summary of my findings so far
+    - REPORT on RandomForest and EDGE Ver.B:
+        - 2021-2022
+            - top1: RandomForest predicted nothing, LogReg predicted 4 players, one of which was the actual winner (Johnny Gaudreau, **Auston Matthews** , Matthew Tkachuk, Jake Guentzel)
+            - top3: RandomForest and LogisticRegression predicted the same players in the same placements:
+                - winner: Auston Matthews (correct)
+                - runner-up: Leon Draisaitl (correct)
+                - finalist: Evgeny Kuznetsov (incorrect, didn't make top 3)
+        - 2022-2023
+            - top1: RandomForest predicted nothing, LogisticRegression predicted 1 player (David Pastrnak, wrong)
+            - top3: both RandomForest and LogisticRegression predicted 3/3 correctly:
+                - winner: Connor McDavid (correct)
+                - runner-up: David Pastrnak (correct)
+                - finalist: Mikko Rantenen (correct)
+        - 2023-2024
+            - top1: RandomForest predicted nothing, LogisticRegression predicted 2 players, Nathan Mackinnon and Auston Matthews (actual winner)
+            - top3: both RandomForest and LogisticRegression on GSS + full EDGE had the exact same predictions:
+                - winner: Auston Matthews (correct)
+                - runner-up: Sam Reinhart (correct)
+                - finalist: Steven Stamkos (incorrect, didn't make top 3)
+        - 2024-2025
+            - top1: neither model made a prediction (not good)
+            - top3: both RandomForest and LogReg made the exact same 4 predictions: - this is fine that 4 predictions were made since third place had a 2 way tie, so 4 players were finalists this year
+                - winner: Leon Draisaitl (correct)
+                - runner-up: Mark Schiefele (incorrect, didn't make top 3)
+                - finalist: John Tavares (incorrect, didn't make top 3)
+                - alternative finalist: Alex Ovechkin (correct)
+        - 2025-2026
+            - top1: EDGE Ver. B predicted correctly, RandomForest() didn't predict at all
+            - top3: both RandomForest and LogisticRegression on GSS + full EDGE had the same exact predictions
+                - winner: Nathan Mackinnon (correct)
+                - runner-up: Jake Guentzel (incorrect, didn't make top 3)
+                - finalist: Connor McDavid (correct)
+        - Summary
+            - this time after testing on all possible EDGE stat seasons, the EDGE Ver. B still outperformed the RandomForest model overall since the RandomForest model failed to make predictions on any top 1 query, but always made identical predictions to the current optimal model on top 3 queries which is quite interesting
+            - actual accuracies calculated are as follows:
+                - top 1 LogReg: (1/4) + (0/1) + (1/2) + (0/1) + (1/1) = 3/9 = ~33%
+                - top 1 RandomForest: 0/5 -> 0%
+                - top 3 LogReg: (2/3) + (3/3) + (2/3) + (2/4) + (2/3) = 11/16 = 
+                - top 3 RandomForest: same as logreg: 11/16 = ~68.75%

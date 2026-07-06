@@ -147,7 +147,7 @@ def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False,
         df = pd.read_csv(csv_path)
         regularDf = fetchSkaterStats(year=year, csv=False, edge=False)     #then combine it with regular GSS
         df = regularDf.merge(df)
-        print("1: ",df.columns())
+        #print("1: ",df.columns())
         if versionA == True:
             df = df.drop(columns=[
                 'Behind the Net Shots',
@@ -174,7 +174,7 @@ def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False,
         csv_path = f"../data/api/skaters/skaters{year_interval}.csv"
         df = pd.read_csv(csv_path)
 
-    print("2: ",df.columns())
+    #print("2: ",df.columns())
 
     #add averageTOI
     df['averageTOI'] = np.zeros(df.shape[0])
