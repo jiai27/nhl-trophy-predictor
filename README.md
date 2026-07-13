@@ -8,13 +8,10 @@ Additionally, I wanted to take what I learned in my recent classes and implement
 ## Current Features:
 N/A, still developing the core stuff 
 
-## Progress (07/06/26):
-- tested on EDGE Ver.A fully and found it to be the most accurate model so far
-- implemented a GradientBoostingModel() for the sake of fine tuning, is still inferior
-- updated results in docs/rrResults.md and findings can be found in docs/commitlog.md
+## Progress (07/12/26):
+- Experimented with fine tuned versions of the current optimal model
+- Settled on a fine tuned model to move forward with (EDGE Ver. B)
 
 ## What's Next:
-- continue fine tuning to the Rocket Richard Prediction Pipeline 
-- look into using either SHAP, LIME or Yellowbrick to visualize feature influences in the prediction model - only applicable for supported models
-- get the rocket richard prediction pipeline relatively finished and recycle pre-processing code for other award pipelines
-- put all final code needed for the Rocket Richard award put into a singular python script instead of a notebook (once model is fully fine-tuned)
+- put all final code needed for the Rocket Richard award put into a singular python script instead of a notebook
+- generalize rocket richard model, training, testing, feature sets pipeline for other awards
