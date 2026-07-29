@@ -6,6 +6,7 @@ import ast
 #Global Vars:
 client = NHLClient()
 
+#---HELPER FUNCTIONS---
 def clear_csv(csv_path):
     '''
     purpose:    takes a csv, clears it and returns the csv converted to Dataframe
@@ -121,6 +122,7 @@ def fetchSkaterStats(year, csv=False, edge = False, versionA = False):
     else:
         return df
     
+    
 def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False, versionA = False):       #modified version of labelwinners for rr2
     '''
     purpose:    fetches a dataset of skaters and adds two columns: average TOI (extra feature) and either rrWinner or rrRank (target features) 
@@ -226,6 +228,7 @@ def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False,
                 df.loc[df['playerId'] == int(finalist), 'rrRank'] = 3
     return df
 
+
 def formatEdgeStats(individual_stat, shotDetails = False):
     '''
     purpose:    takes a dictionary representing a player's comprehensive EDGE stats, and format them for a better overall feature-set
@@ -294,3 +297,6 @@ def formatEdgeStats(individual_stat, shotDetails = False):
                     break
 
     return formattedFrame
+#---HELPER FUNCTIONS---
+
+# Helper functions are separate from the actual preprocessing -> creating testing/training sets -> model prediction functions; these will be classified as "pipeline functions"

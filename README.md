@@ -8,10 +8,11 @@ Additionally, I wanted to take what I learned in my recent classes and implement
 ## Current Features:
 N/A, still developing the core stuff 
 
-## Progress (07/12/26):
-- Experimented with fine tuned versions of the current optimal model
-- Settled on a fine tuned model to move forward with (EDGE Ver. B)
+## Progress (07/29/26):
+- All code for the Rocket Richard Predicitng Pipeline + basic input formatting is completed in rocketrichard.py
+- More or less, generalizing for the prediction pipeline sort of works, but won't be more applicable until more awards are developed  
+- Note: this commit took a lot longer because I worked all 10 days of K-Days leaving me unable to work on this project
 
 ## What's Next:
-- put all final code needed for the Rocket Richard award put into a singular python script instead of a notebook
-- generalize rocket richard model, training, testing, feature sets pipeline for other awards
+- Continue developing the prediction pipeline for other direct statistic awards first (Art Ross, Vezina, etc.), then moving onto more subjective awards (Conn Smythe, Hart, Ted Lindsay etc.)
+
