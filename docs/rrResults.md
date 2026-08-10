@@ -5,6 +5,7 @@
 |07/10/26| RR#3 | GSS + part. EDGE | LogisticRegression() | 2021-2026 (5) | **42.9%** | 16% | EDGE Model Ver.A
 |07/05/26 | RR#4 | GSS + EDGE | RandomForest() | 2021-2026 (5) | 0% | 68.8% | same top3 predictions as RR#2 |
 |07/06/26| RR#5 | GSS + EDGE | GradientBoostingClassifier() | 2021-2026 (5) | 18.2% | 68.8% | uses default hyperparameters |
+| **07/31/26** | **Art Ross #1** | **GSS + EDGE** | **LogisticRegression()** | **2021-2026 (5)** | **33.3%** | **100%** | **used same model as RR#2, best of Art Ross** | 
 
 
 <!-- | .. | ... | ... | ... | ... | ... | ... | placeholder | --> 

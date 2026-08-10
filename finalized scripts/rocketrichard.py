@@ -6,7 +6,7 @@ import pandas as pd
 from nhlpy import NHLClient
 import ast
 #from notebooks.helpersrr import clear_csv, extractPlayerID, placeToStats, fetchSkaterStats, labelWinners, formatEdgeStats #--HELPER FUNCTIONS FOR FINE TUNING NOTEBOOKS AND FINAL PIPELINE--
-from helpersrr import *
+from helpers import *
 from sklearn.linear_model import LogisticRegression
 
 #---GLOBAL VARS--- change these for different versions
@@ -32,6 +32,7 @@ def predictAward(): #<- this is a function moreso for the general pipeline
     #more aliases to follow for the generalized award script
     if award_chosen in rocketRichardAliases:        
         award_chosen = "rocketrichard"
+    print(f"Award Selected: {award_chosen}")
     getStandingsIds(award_chosen)       #good now
     
     topWhich = input("Would you like to predict only the winner (top 1) or the finalists (top 3)? (1/3):")
@@ -44,7 +45,12 @@ def predictAward(): #<- this is a function moreso for the general pipeline
 
     yearToTest = input("Which season would you like to predict on? (Format: YYYY or YYYYYYYY | Enter nothing if you'd like to predict for the current ongoing season): ")
     #NO INPUT FILTERING YET
-    print(f"Predicting for {yearToTest}...")
+    if yearToTest == "":
+
+        print(f"Predicting for ")
+    else:
+        print(f"Predicting for {yearToTest}...")
+
     spliceSets(yearToTest)                        #good now
     trainModel()                                  #good now
     testModel(yearToTest)                                   #good now
@@ -124,7 +130,6 @@ def trainModel():
         train_x = masterTesting.drop(columns=['skaterFullName','rrRank','playerId','seasonId'])
         train_y = masterTesting['rrRank']
 
-    #print(type(train_x), type(train_y),train_x, train_y)
     model.fit(train_x, train_y)
     return
 
@@ -153,6 +158,7 @@ def testModel(testing_year="20252026"):
     
     feature_names = test_x.columns
     coefficients = pd.Series(model.coef_[0], index=feature_names)
+    print("---STATISTIC WEIGHTS---")
     print(coefficients.sort_values())
 
     if ranks == False:
@@ -164,9 +170,11 @@ def testModel(testing_year="20252026"):
     if ranks == False:
         print(f'---PREDICTION FOR TOP 1 RECIPIENT OF [AWARD_NAME] OF THE {testing_year} SEASON---')
         print(show['skaterFullName'], show['goals'], show['rrWinner'], show['predictions'])
+        print(f'---PREDICTION FOR TOP 1 RECIPIENT OF [AWARD_NAME] OF THE {testing_year} SEASON---')
     else:
         print(f'---PREDICTION FOR TOP 3 RECIPIENTS OF [AWARD_NAME] OF THE {testing_year} SEASON---')
         print(show['skaterFullName'], show['goals'], show['rrRank'], show['predictions'])
+        print(f'---PREDICTION FOR TOP 3 RECIPIENTS OF [AWARD_NAME] OF THE {testing_year} SEASON---')
 
     return show
 
@@ -174,9 +182,9 @@ def testModel(testing_year="20252026"):
 
 #predictAward()
 
-def main():     #testing    
+#def main():     #testing    
+#    predictAward()
 
-    predictAward()
-
-if __name__ == "__main__":
-    main()
+#if __name__ == "__main__":
+#    main()
+predictAward()

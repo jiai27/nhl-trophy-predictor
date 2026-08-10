@@ -30,7 +30,7 @@ def extractPlayerID(url):
     return split[-1]
 
 
-def placeToStats(place_list):
+def placeToStats(place_list, mode="artross"):
     '''
     purpose:    takes a list of players from the webscraped csv and returns a list of the stats of players in the list
     parameters: place_list (a pandas dataframe of tuples)
@@ -43,14 +43,19 @@ def placeToStats(place_list):
     players = players.tolist()
 
     for i in range(len(players)):
-        playerTuple = ast.literal_eval(players[i])    
-        if type(playerTuple) != tuple:      #working with an entry where multiple players won this award
-            for entry in playerTuple:
-                id = extractPlayerID(entry[0])
-                ids.append((seasons[i],id))
-            continue
-        
-        id = extractPlayerID(playerTuple[0])
+        if mode == "rocketrichard":
+            playerTuple = ast.literal_eval(players[i])
+            if type(playerTuple) != tuple:      #working with an entry where multiple players won this award
+                        for entry in playerTuple:
+                            id = extractPlayerID(entry[0])
+                            ids.append((seasons[i],id))
+                        continue
+            id = extractPlayerID(playerTuple[0])        #is only the case with rocket richard  
+
+        else:
+            playerTuple = players[i]
+            id = playerTuple.rsplit("-")[-1]                            #is not actually a tuple, just the playerurl, hence extractPlayerID does not need to be called
+
         ids.append((seasons[i],id))
     return ids
 
@@ -197,8 +202,9 @@ def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False,
             split = entry[0].rsplit("-")
             if str(split[0]) == (startYear):
                 winner = entry[1]
-                break
-        df.loc[df['playerId'] == int(winner), 'rrWinner'] = 1   #modify the entry directly
+                print(entry, startYear, split)
+                #break
+                df.loc[df['playerId'] == int(winner), 'rrWinner'] = 1   #modify the entry directly
 
     #add rr finalists
     else:
