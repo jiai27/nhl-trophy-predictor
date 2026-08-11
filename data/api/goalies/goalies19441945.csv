@@ -1,0 +1,11 @@
+assists,gamesPlayed,gamesStarted,goalieFullName,goals,goalsAgainst,goalsAgainstAverage,lastName,losses,otLosses,penaltyMinutes,playerId,points,savePct,saves,seasonId,shootsCatches,shotsAgainst,shutouts,teamAbbrevs,ties,timeOnIce,wins
+0,50,50,Bill Durnan,0,121,2.42,Durnan,8,,0,8449910,0,,,19441945,L,,1,MTL,4,180000,38
+0,37,37,Harry Lumley,0,119,3.21621,Lumley,10,,0,8450019,0,,,19441945,L,,1,DET,3,133200,24
+0,50,50,Frank McCool,0,161,3.22,McCool,22,,0,8450029,0,,,19441945,L,,4,TOR,4,180000,24
+1,48,48,Mike Karakas,0,187,3.89583,Karakas,29,,0,8450007,1,,,19441945,L,,4,CHI,7,172800,12
+0,46,46,Ken McAuley,0,227,4.93478,McAuley,25,,0,8450027,0,,,19441945,R,,1,NYR,10,165600,11
+0,25,24,Harvey Bennett,0,106,4.32947,Bennett,13,,0,8449819,0,,,19441945,L,,0,BOS,2,88140,10
+0,12,12,Connie Dion,0,39,3.25,Dion,4,,0,8449896,0,,,19441945,R,,0,DET,2,43200,6
+0,26,26,Paul Bibeault,0,112,4.38928,Bibeault,17,,0,8449823,0,,,19441945,L,,0,BOS,2,91860,6
+0,1,1,Normie Smith,0,3,3.0,Smith,0,,0,8450115,0,,,19441945,L,,0,DET,0,3600,1
+0,6,6,Doug Stevenson,0,27,4.5,Stevenson,5,,0,8450119,0,,,19441945,L,,0,"NYR,CHI",0,21600,1

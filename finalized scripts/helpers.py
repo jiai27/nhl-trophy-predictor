@@ -150,7 +150,8 @@ def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False,
         raise SyntaxError("requires yyyy or yyyyyyyy format of season year")
     
     if edge == True:
-        csv_path = f"../data/api/EDGEstats/skatersEDGE{year_interval}.csv"
+        csv_path = f"../data/api/EDGEstats/skaters/skatersEDGE{year_interval}.csv"
+
         edge_df = pd.read_csv(csv_path)    
         if versionA == True:      
             regularDf = fetchSkaterStats(year=year, csv=False, edge=False, versionA=True)     #then combine it with regular GSS
@@ -235,74 +236,193 @@ def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False,
     return df
 
 
-def formatEdgeStats(individual_stat, shotDetails = False):
+def formatEdgeStats(individual_stat, shotDetails = False, goalie = False):
     '''
     purpose:    takes a dictionary representing a player's comprehensive EDGE stats, and format them for a better overall feature-set
     parameters: individual_stat (dictionary), shotDetails (boolean on if we want shot location details included or not)
     returns:    df (pandas DataFrame)
     '''
     playerId = individual_stat['player']['id']
-    topShotSpeed = individual_stat['topShotSpeed']['metric']
-    skatingSpeed = individual_stat['skatingSpeed']['speedMax']['metric']
-    totalDistanceSkated = individual_stat['totalDistanceSkated']['metric']
-    distanceMaxGame = individual_stat['distanceMaxGame']['metric']
 
-    longShots = individual_stat['sogSummary'][2]['shots']
-    longGoals = individual_stat['sogSummary'][2]['goals']
+    shotList = [
+                            'Behind the Net',
+                            'Beyond Red Line',
+                            'Center Point',
+                            'Crease',
+                            'High Slot',
+                            'L Circle',
+                            'L Corner',
+                            'L Net Side',
+                            'L Point',
+                            'Low Slot',
+                            'Offensive Neutral Zone',
+                            'Outside L',
+                            'Outside R',
+                            'R Circle',
+                            'R Corner',
+                            'R Net Side',
+                            'R Point'
+                            ]
 
-    midShots = individual_stat['sogSummary'][3]['shots']
-    midGoals = individual_stat['sogSummary'][3]['goals']
+    if goalie == False:     #skater specific stats
+        topShotSpeed = individual_stat['topShotSpeed']['metric']
+        skatingSpeed = individual_stat['skatingSpeed']['speedMax']['metric']
+        totalDistanceSkated = individual_stat['totalDistanceSkated']['metric']
+        distanceMaxGame = individual_stat['distanceMaxGame']['metric']
 
-    highShots = individual_stat['sogSummary'][1]['shots']
-    highGoals = individual_stat['sogSummary'][1]['goals']
+        longShots = individual_stat['sogSummary'][2]['shots']
+        longGoals = individual_stat['sogSummary'][2]['goals']
 
-    if shotDetails == True:
-        #sogDetails
-        sogS=[]
-        for areas in individual_stat['sogDetails']:
-            areaName = areas['area']
-            areaShots = areas['shots']
-            sogS.append((areaName,areaShots))
+        midShots = individual_stat['sogSummary'][3]['shots']
+        midGoals = individual_stat['sogSummary'][3]['goals']
+
+        highShots = individual_stat['sogSummary'][1]['shots']
+        highGoals = individual_stat['sogSummary'][1]['goals']
+
+        if shotDetails == True:
+            #sogDetails
+            sogS=[]
+            for areas in individual_stat['sogDetails']:
+                areaName = areas['area']
+                areaShots = areas['shots']
+                sogS.append((areaName,areaShots))
+        
+        offensiveZonePctg = individual_stat['zoneTimeDetails']['offensiveZonePctg']
+        neutralZonePctg = individual_stat['zoneTimeDetails']['neutralZonePctg']
+        defensiveZonePctg = individual_stat['zoneTimeDetails']['defensiveZonePctg']
+        
+        cols = ['playerId','topShotSpeed','skatingSpeed','totalDistanceSkated','distanceMaxGame','longShots','longGoals','midShots','midGoals','highShots','highGoals','offensiveZonePctg','neutralZonePctg','defensiveZonePctg']
+        formattedFrame = pd.DataFrame(index=[0])
+
+        for col in cols:                            #port all current local variables in this scope to the formatted Dataframe
+            formattedFrame[col] = locals()[col]
+
+        if shotDetails == True:
+            for col in shotList:
+                for i in range(len(sogS)):
+                    if sogS[i][0] == col:
+                        goalItem = sogS.pop(i)
+                        newName = col + " Shots"        #rename the columns
+                        formattedFrame[newName] = goalItem[1]
+                        break
+        return formattedFrame
+    else:               #if we're formatting for goalies only
+        goalsAgainstAvg = individual_stat['stats']['goalsAgainstAvg']['value']
+        gamesAbove900 = individual_stat['stats']['gamesAbove900']['value']                   #above 0.900 SV% ?
+        goalDifferentialPer60 = individual_stat['stats']['goalDifferentialPer60']['value']
+        goalSupportAvg = individual_stat['stats']['goalSupportAvg']['value']                 #avg number of goals team scores while goaltender is in net
+        pointPctg = individual_stat['stats']['pointPctg']['value']                           #standings points recorded for games the goalie starts / maximum possible points                                     
+
+        #print(goalsAgainstAvg, gamesAbove900, goalDifferentialPer60)
+        savesOnGoal = []
+        for eacharea in individual_stat['shotLocationDetails']:
+            areaName = eacharea['area']
+            areaSaves = eacharea['saves']
+            areaSavePctg = eacharea['savePctg']
+            savesOnGoal.append((areaName, areaSaves, areaSavePctg))
+
+        formattedFrame = pd.DataFrame(index=[0])
+        cols = ['playerId', 'goalsAgainstAvg', 'gamesAbove900', 'goalDifferentialPer60','goalSupportAvg','pointPctg']
+
+        for col in cols:
+            formattedFrame[col] = locals()[col]
+        #print(savesOnGoal)
+        
+        for col in shotList:
+            for i in range(len(savesOnGoal)):
+                #print(savesOnGoal[i])
+                #print(savesOnGoal[i][0], type(savesOnGoal[i][0]), col, type(col))
+                if savesOnGoal[i][0] == col:
+                    #goalItem = savesOnGoal.pop(i)
+                    goalItem = savesOnGoal[i]
+                    newNameSaves = col + " Saves"
+                    newNamePctg = col + " Save Pctg"
+                    formattedFrame[newNameSaves] = goalItem[1]
+                    formattedFrame[newNamePctg] = goalItem[2]
+        
+        return formattedFrame
+
+
+def fetchGoalieStats(year, csv=False, edge = False, versionA = False):
+    '''
+    purpose:        fetches all summary goalie stats of a given year and compresses into the desired format
+    parameters:     year (string), csv (boolean), edge (boolean) indicating if you're
+    returns:        a dataframe OR csv of all player stats of that given year
+    '''
+    year_df = []
+
+    #format year for the filter (is a string when inputted)
+    if len(year) == 4:
+        int_year = int(year)
+        interval = (int_year,int_year+1)
+        year_interval = str(interval[0]) + str(interval[1])
+    elif len(year) == 8:    #20252026
+        year_interval = year
+    else:
+        raise SyntaxError("requires yyyy or yyyyyyyy format of season year")
     
-    offensiveZonePctg = individual_stat['zoneTimeDetails']['offensiveZonePctg']
-    neutralZonePctg = individual_stat['zoneTimeDetails']['neutralZonePctg']
-    defensiveZonePctg = individual_stat['zoneTimeDetails']['defensiveZonePctg']
+    #since there are ~900 skaters each season, must account for pagination
+    #earlier testing indicates a 100 entry limit per request
+    if edge == True:    #get EDGE stats
+        for i in range(3):
+            startMark = 100*i
+            endMark = 100*(i+1)
+            statChunk = pd.DataFrame(client.stats.goalie_stats_summary(  #extract players in intervals of 100
+                start_season=year_interval,
+                end_season=year_interval,
+                start=startMark,
+                limit=endMark
+            ))
+            #---AI Assisted---
+            #print(f"Chunk {i} columns: {statChunk.columns.tolist()}, shape: {statChunk.shape}")
+            #print(statChunk.head())
+            
+            # Check if DataFrame is empty or missing playerId column
+            if statChunk.empty:
+                print(f"Chunk {i} is empty, skipping")
+                continue
+            
+            if 'playerId' not in statChunk.columns:
+                print(f"Warning: 'playerId' not in chunk {i} columns. Available: {statChunk.columns.tolist()}")
+                continue
+            #---AI Assisted---
+            ids = statChunk['playerId']     #get their ids
+            new_df = []
+            for id in ids:
+                individual_stat = client.edge.goalie_detail(player_id=id, season=year_interval)
+                
+                if versionA == False:
+                    formatted_stat = formatEdgeStats(individual_stat=individual_stat,shotDetails=True, goalie=True)  #get their edge stats
+                else:
+                    formatted_stat = formatEdgeStats(individual_stat=individual_stat,shotDetails=False, goalie=True)
+                new_df.append(formatted_stat)
+            
+            df = pd.DataFrame()
+            for item in new_df:
+                df = pd.concat([df, item])
     
-    cols = ['playerId','topShotSpeed','skatingSpeed','totalDistanceSkated','distanceMaxGame','longShots','longGoals','midShots','midGoals','highShots','highGoals','offensiveZonePctg','neutralZonePctg','defensiveZonePctg']
-    formattedFrame = pd.DataFrame(index=[0])
+    else:       #get GSS
+        for i in range(10):
+            startMark = 100*i
+            endMark = 100*(i+1)
+            statChunk = client.stats.goalie_stats_summary(
+                start_season=year_interval,
+                end_season=year_interval,
+                start = startMark,
+                limit = endMark
+            )
+            for record in statChunk:
+                year_df.append(record)
+        df = pd.DataFrame(year_df)
 
-    for col in cols:
-        formattedFrame[col] = locals()[col]
+    if csv == True:
+        if edge == True:
+            df.to_csv(f'../data/api/EDGEstats/goalies/goaliesEDGE{year_interval}.csv', index = False)
+        else:
+            df.to_csv(f'../data/api/goalies/goalies{year_interval}.csv',index=False)
+    else:
+        return df
 
-    if shotDetails == True:
-        shotDetails = [
-                    'Behind the Net',
-                    'Beyond Red Line',
-                    'Center Point',
-                    'Crease',
-                    'High Slot',
-                    'L Circle',
-                    'L Corner',
-                    'L Net Side',
-                    'L Point',
-                    'Low Slot',
-                    'Offensive Neutral Zone',
-                    'Outside L',
-                    'Outside R',
-                    'R Circle',
-                    'R Corner',
-                    'R Net Side',
-                    'R Point'
-                    ]
-        for col in shotDetails:
-            for i in range(len(sogS)):
-                if sogS[i][0] == col:
-                    goalItem = sogS.pop(i)
-                    newName = col + " Shots"        #rename the columns
-                    formattedFrame[newName] = goalItem[1]
-                    break
-
-    return formattedFrame
 #---HELPER FUNCTIONS---
 
 # Helper functions are separate from the actual preprocessing -> creating testing/training sets -> model prediction functions; these will be classified as "pipeline functions"

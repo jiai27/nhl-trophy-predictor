@@ -8,14 +8,13 @@ Additionally, I wanted to take what I learned in my recent classes and implement
 ## Current Features:
 N/A, still developing the core stuff 
 
-## Progress (08/10/26):
-- Did testing on Art Ross, Hart Trophy and Selke Trophy, but all on a "bugged" version of the code
+## Progress (08/11/26):
+- added 2025-2026 award winners to csv files that didn't have them
+- fetched all goalie stats from 1940-2026 for the Vezina trophy prediction
+- fetched all goalie EDGE stats from 2021-2026 for the Vezina trophy prediction
 
 ## What's Next:
+- Predict on the Vezina Trophy with the newly added goalie stats
 - Redo Art Ross, Hart Trophy and Selke Trophy tests on the fixed version of the code
-- fetch the 2025-2026 season award recipients for all of the csvs in data/formattedwebscraped now that the recipients have been awarded for this year
-
-- Make changes necessary to predict the Vezina Trophy Recipient, the Top **Goaltender** of the season; this is because the pipeline only works for skaters right now, no goalie data (thankfully, nhlpy can also fetch goalie stats specifically, may need to create a new folder for this)
-
 - Continue developing the prediction pipeline for other direct statistic awards (**Art Ross**, Vezina, etc.), then move onto more subjective awards (Conn Smythe, Hart, Ted Lindsay etc.)
 

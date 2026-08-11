@@ -1,93 +1,18 @@
 ## This document will contain all notes about the commit it is apart of and ONLY that commit
 
-## Decisions/Comments regarding the development of general.py
-- 07/31/26
+## Decisions/Comments/Notes regarding the development of general.py
+- 08/10/26
     - Thoughts before implementation
-        - as stated at the top of the general.py file, that file exists to look similar to the rocketrichard.py file, but instead of having a committed file for each award, the general.py file will run the same prediction pipeline just according to the inputs of the user
-        - since it prompts for:
-            - "What award to predict on?"
-            - "What season to predict the recipient on?"
-            - and "Top 1 recipients or Top 3 recipients?"
-        the general.py file should be able to account for this and change it accordingly
-        - though it should be noted that the global variable 'model' at the top of the file may have to change according to the award selected since it would probably make sense to have differently tuned models for different awards as a result of continuous testing, but I would like to see how different predictions turn out if I were to use the same model I've been using for the original Rocket Richard baseline
-        - for now, I'll just have the generalized file fully sorted out, then after that works, start hopping onto testing out baseline models for various other awards
-        - after making some (important: NOT perfectly optimized models for each award), I would like to move onto what I was more envisioning for this project, a simple website front-end with visualizations on how the prediction math actually worked so then users with no idea how the tool works can sort of gauge it without the prediction seeming like a black box
-        - only then after the front end visualization and most awards are predicting properly, I'll go back to optimizing these models; this may signal the end of the project but I would like to continue poking away at it once the upcoming 2026-2027 NHL season actually starts (that way I can learn how to scale the project when more real time data is collected)
+        - I'm going to start by updating all of the csvs in data/formattedwebscraped first to be updated to the 2025/2026 season; this'll be done in models.ipynb
+        - Actually, I lied, I'm going to do this by hand because its easier than trying to web scrape again
     - During implementation
-        - for now, the method of selecting WHICH award to predict on is just going to be typing in the console which award and it'll only accept if it hits the right keywords, this is a TEMPORARY fix as the front-end UI will just have the user select which award they'd like to be predicted on
-        - since the baseline model only works for edge seasons, the predictor is restricted only to seasons WITH EDGE stats, I will see if I can implement a different model that doesn't use EDGE stats so users can try predicting for older seasons, though the performance drops significantly in prior testing
-        - need to fix labelWinners for all instances of where the player entry is usually treated as a tuple for RR but not anything else, for top 3 and top 1 modes (line 201-235 in helpers.py within labelWinners()) -- FIXED, had to edit mainly placeToStats lines 46-59 in helpers.py
-        - I think I have properly implemented the generalization for the Art Ross Trophy prediction, for 2025-2026 top 3 prediction, the model is 3/3 correct
-        - Honestly I should've made this generalization file a lot sooner, it makes testing so much faster and easier :sob:
-        - REPORT on Art Ross Predictions using the baseline rocket richard optimal model:
-            - 2021-2022
-                - top1: predicted Connor McDavid ONLY (1/1 correct)
-                - top3: predicted Connor McDavid (1st), Johnny Gaudreau (2nd), Jonathan Huberdeau (3rd) (3/3 CORRECT)
-            - 2022-2023
-                - top1: predicted 5 players, among them was Connor McDavid (1/5 correct)
-                - top3: predicted Connor McDavid (1st), Leon Draisaitl (2nd), David Pastrnak (3rd) (3/3 CORRECT)
-            - 2023-2024
-                - top1: predicted same 3 players, (1/3 correct), still pretty good
-                - top3: predicted Nikita Kucherov (1st), Nathan Mackinnon (2nd), Connor McDavid (3rd) (3/3 CORRECT)
-            - 2024-2025
-                - top1: predicted nothing (0/1, not surprised)
-                - top3: predicted Nikita Kucherov (1st), Nathan Mackinnon (2nd), Leon Draisaitl (3rd) (3/3 CORRECT)
-            - 2025-2026
-                - top1: predicted Connor McDavid and Nikita Kucherov (1/2 correct)
-                - top3: predicted Connor McDavid (1st), Nikita Kucherov (2nd), Nathan Mackinnon (3rd) (3/3 CORRECT, WHAT A GENERATIONAL RUN)
-                ![Honest Reaction to the Model's Art Ross Performance](https://i.ytimg.com/vi/zvSWZPDf1Eg/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLC6gntLKmd5Td1mg3cvQepANmg88Q)
-            - overall:
-                - top 1: (4/12) = 33.3% accurate
-                - top 3: (15/15) = 100% accurate (INSANE)
-        - I'm now going to test on the Hart Trophy, but first, some errors to debug again:
-            - two issues arise here: 
-                1. when I first web scraped for the hart trophy, the 2025-2026 finalists weren't out yet thus didn't end up in my csv, for performance reasons I don't update the csv when running the prediction pipeline, so entering for 2025-2026 doesn't yet exist yet for the tool
-                2. the most recent hart winner (for the 2024-2025 season) is Connor Hellebuyck who plays goalie, since this tool doesn't have goalie stats yet factored, this prediction cannot be completed, but for curiosity reasons I'll check who it predicts anyway if it were solely just skaters
-                - this arises a new issue where an award can include both skaters AND goalies, so I'll have to factor that into play when predictng for different awards still
-        - 08/2/26
-        - REPORT on Hart Trophy Preictions using the baseline rocket richard optimal model:
-            - 2021-2022
-                - top1: predicted nobody (0/1 CORRECT)
-                - top3: predicted Matthews (1st), McDavid (2nd), did NOT predict Shesterkin since he's a goalie (technically 2/2 CORRECT)
-            - 2022-2023
-                - top1: predicted 4 players, 1 of which was McDavid (1/4 CORRECT)
-                - top3: predicted McDavid (1st), Pastrnak (2nd), Tkachuk (3rd) (3/3 CORRECT)
-            - 2023-2024
-                - top1: predicted Matthews and Stamkos (0/2 correct)
-                - top3: predicted Mackinnon (1st), Kucherov (2nd), McDavid (3rd) (3/3 CORRECT)
-            - 2024-2025 
-                - note: the winner was Connor Hellebuyck who is a goalie (I haven't factored goalies yet so this prediction is purely just to see who it predicts if only skaters were in play)
-                - top1: raises an error because the winner doesn't exist technically (SKIPPING)
-                - top3: predicted Nikita Kucherov (3rd) and Leon Draisaitl (2nd) (2/3 CORRECT, technically 2/2?)
-            - 2025-2026 historical winners weren't placed yet when I first fetched, so this'll be excluded
-            - note: in first_ids, 2024-2025 winner Connor Hellebuyck is replaced by Kucherov (25-26' winner)
-            - overall
-                - top1:
-                - top3:
-        - REPORT on Selke Trophy Predictions using the baseline rocket richard optimal model:
-            - 2021-2022
-                - top1: 
-                - top3: predicted Jake Guentzel (2nd), Nathan Mackinnon (3rd) (0/2 correct)
-            - 2022-2023
-                - top1: predicted 6 players, none of which were top 3 (0/6 correct)
-                - top3: predicted Tomas Hertl (1st), Nico Hischier (2nd), Mitch Marner (3rd), (2/3 correct) with penalty mins as the highest feature
-            - 2023-2024
-                - top1: predicted nothing
-                - top3: predicted only Matthews (3rd), (1/3 correct)
-            - 2024-2025
-                - top1: predicted Jack Eichel (0/1 correct); plusMinus was the highest weighted feature 
-                - top3: predicted Adrian Kempe (1st), Dylan Strome (2nd), Mika Zibanejad (3rd) (0/3 correct)
-            - 2025-2026 historical winners weren't placed when I first fetched, so this'll be excluded
-            - overall
-                - the model for both top 1 and top 3 predictions suck, and its quite evident in the fact that most top 5 features have almost nothing to do with sufficient defensive play (plus minus, pentalty minutes, games played), which leads me to observe that the General Skater Statistics + EDGE Stats are primarily more telling of a player's offensive play (especially EDGE stats)
-                - Therefore, for an award like the Selke Trophy, a different feature set must be used; thus **the Selke Trophy is one of the awards that definitely need more fine tuning / development put into it**
-        - REPORT on Norris Trophy Predictions using the baseline rocket richard optimal model:
-            - 2021-2022
-            - 2022-2023
-            - 2023-2024
-            - 2024-2025
-                - top1:
-                - top3:
-            - 2025-2026 historical winners weren't placed when I first fetched, so this'll be excluded
-    - will definitely have to redo tests for Art Ross, Hart Trophy, Selke and Norris because all testing has been done with a bug in the prediction code, will be done in the next commit
-    
+        - While adding goalie stats (the general goalie stats aka GGS), I figured I should also add EDGE Goalie stats which made me change the EDGEstats folder from containing just the skater EDGE stats to splitting it into 2 folders -- the only reason I note this is I may have to come back to line 153 in helpers.py to account for goalie EDGE stats or not
+        - 08/11/26
+        - I've made alternate helper functions for the goalie stat formatting, originally found in models.ipynb but later added/updated to helpers.py. the following functions are part of this update/change:
+            - fetchSkaterStats() has an alternate form: fetchGoalieStats()
+            - formatEdgeStats() now has an extra parameter 'goalie' to indicate if you're formatting a goalie's stats or not
+        - Between the keys from goalie_detail() labeled 'shotLocationSummary' and 'shotLocationDetails', Summary is obviously more general and Details is more detailed, thus to mimic the thoroughness the predictor uses for skaters, I'll be using the 'shotLocationDetails' as part of the feature set
+        - within the 'shotLocationDetails' label, each area in the defensive zone has keys for: saves, savesPercentile, savepctg and savePctgPercentile. I'm leaning towards choosing either 'saves' (the actual # of saves) OR savepctg (number of saves relative to shots from that area)
+        - it should be noted for skaters, I only included shots and goals for the categories of 'long shots', 'mid shots, 'high shots, and the rest of the area specific shots and goals were ONLY shots
+        - so I'm thinking the better decision would be to add both 'saves' and 'savepctg', then experiment what plays better if I were to drop one of those features vs the other
+        - used AI to write a few lines in fetchGoalieStats() to deal with empty pagination entries, that's it
