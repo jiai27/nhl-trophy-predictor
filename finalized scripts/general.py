@@ -21,7 +21,7 @@ ranks = False
 client = NHLClient()
 first_ids, second_ids, third_ids = [],[],[]
 masterTraining, masterTesting = pd.DataFrame(), pd.DataFrame()
-model = LogisticRegression(max_iter=20000, class_weight="balanced")     #baseline model for all awards (the most optimal version of the Rocket Richard Predictor)
+model = LogisticRegression(max_iter=30000, class_weight="balanced")     #baseline model for all awards (the most optimal version of the Rocket Richard Predictor)
 displayAward = 'Maurice "Rocket" Richard Trophy'
 
 #---GLOBAL VARS---
@@ -69,10 +69,12 @@ def predictAward(): #<- this is a function moreso for the general pipeline
         raise SyntaxError("ERROR. Award not found. Try a different keyword?")
 
     getStandingsIds(award_chosen)       #good now
-    if award_chosen == 'james norris memorial trophy':
-        print(first_ids)
-        print(second_ids)
-        print(third_ids)
+    
+    #if award_chosen == 'vezina trophy':
+    #    print(first_ids)
+    #    print(second_ids)
+    #    print(third_ids)
+    
 
     print(f"Award Selected: {displayAward}")
     
@@ -98,9 +100,15 @@ def predictAward(): #<- this is a function moreso for the general pipeline
     else:
         print(f"Predicting Winner for the {yearToTest} NHL Season...")
 
-    spliceSets(yearToTest)                        #good now
-    trainModel()                                  #good now
-    testModel(yearToTest)                         #good now
+    if award_chosen == 'vezina trophy':
+        spliceSets(yearToTest, vezina = True)
+        trainModel()
+        testModel(yearToTest)
+
+    else:
+        spliceSets(yearToTest)                        #good now
+        trainModel()                                  #good now
+        testModel(yearToTest)                         #good now
     
 def getStandingsIds(award_name):
     '''
@@ -124,7 +132,7 @@ def getStandingsIds(award_name):
 
     return
 
-def spliceSets(testingYear=client.edge.skater_landing(season='20252026')['seasonsWithEdgeStats'][-1]['id'], withEdge = True):
+def spliceSets(testingYear=client.edge.skater_landing(season='20252026')['seasonsWithEdgeStats'][-1]['id'], withEdge = True, vezina = False):
     '''
     purpose:    splits training and testing sets either w/ or w/o edge stats
     parameters: 
@@ -143,15 +151,32 @@ def spliceSets(testingYear=client.edge.skater_landing(season='20252026')['season
             currentEDGEszns.append(szn['id'])
         
         for year in currentEDGEszns:
-
-            if ranks==True:
-                modifiedDf = labelWinners(year=str(year)[:4], first_ids=first_ids, second_ids=second_ids, third_ids=third_ids, rank=True, edge=True)
+            if vezina == False:
+                if ranks==True:
+                    modifiedDf = labelWinners(year=str(year)[:4], first_ids=first_ids, second_ids=second_ids, third_ids=third_ids, rank=True, edge=True,vezina=False)
+                else:
+                    modifiedDf = labelWinners(year=str(year)[:4], first_ids=first_ids, second_ids=second_ids, third_ids=third_ids, rank=False, edge=True,vezina=False)
             else:
-                modifiedDf = labelWinners(year=str(year)[:4], first_ids=first_ids, second_ids=second_ids, third_ids=third_ids, rank=False, edge=True)
-            feature_set = modifiedDf.drop(columns=to_drop)
-            feature_set = feature_set.dropna()
+                if ranks==True:
+                    modifiedDf = labelWinners(year=str(year)[:4], first_ids=first_ids, second_ids=second_ids, third_ids=third_ids, rank=True, edge=True, vezina=True)
+                else:
+                    modifiedDf = labelWinners(year=str(year)[:4], first_ids=first_ids, second_ids=second_ids, third_ids=third_ids, rank=False, edge=True, vezina=True)
+          
+            for column in to_drop:
+                if column in modifiedDf.columns:
+                    modifiedDf = modifiedDf.drop(columns=column)
+                    #print("dropping ",column)
+            feature_set = modifiedDf
+            #(f"before dropna for {year}", feature_set.shape)
+            #print(feature_set.loc[feature_set.isna().any(axis=1)])
+            if vezina == False:
+                feature_set = feature_set.dropna()
+            else:
+                feature_set = feature_set.fillna(0)     #set all NaNs to 0
             feature_set.loc[feature_set['shootsCatches'] == "L", 'shootsCatches'] = 0    #encode L -> 0 to fit model
             feature_set.loc[feature_set['shootsCatches'] == "R", 'shootsCatches'] = 1    #encode R -> 1 to fit model
+            #print(f"after dropna for {year}: ",feature_set.shape)
+            #print(feature_set.loc[feature_set['rrRank'] != 0])
             if str(year) == str(testingYear):    
                 testing_sets.append(feature_set)
             else:
@@ -173,16 +198,24 @@ def trainModel():
     returns:    None
     note:       the 'model' global variable changes depending on the award selected, may have to come back here and adapt for that change later
     '''
+    #print(masterTraining['rrRank'].shape)
     global model
     if ranks == False:
-        train_x = masterTraining.drop(columns=['skaterFullName','rrWinner','playerId','seasonId'])
+        to_drop = ['skaterFullName','rrWinner','playerId','seasonId', 'goalieFullName']
         train_y = masterTraining['rrWinner']
     else:
-        train_x = masterTraining.drop(columns=['skaterFullName','rrRank','playerId','seasonId'])
+        to_drop = ['skaterFullName','rrRank','playerId','seasonId', 'goalieFullName']
         train_y = masterTraining['rrRank']
 
+    train_x = masterTraining
+
+    for column in to_drop:
+        if column in train_x.columns:
+            train_x = train_x.drop(columns=column)
+
     #print(train_x, train_y, train_y.loc[train_y != 0])
-    #print()
+    #print(train_x.shape, train_x.columns)
+    #print(train_x.shape, train_y.shape)
 
     model.fit(train_x, train_y)
     return
@@ -194,11 +227,17 @@ def testModel(testing_year=client.edge.skater_landing(season='20252026')['season
     returns:    a dataframe comparing the model prediction to the actual results
     '''
     if ranks == False:
-        test_x = masterTesting.drop(columns=['skaterFullName','rrWinner','playerId','seasonId'])
-        test_y = masterTesting['rrWinner']
+        to_drop = ['skaterFullName','rrWinner','playerId','seasonId', 'goalieFullName']
+        #test_y = masterTesting['rrWinner']
+        
     else:
-        test_x = masterTesting.drop(columns=['skaterFullName','rrRank','playerId','seasonId'])
-        test_y = masterTesting['rrRank']
+        to_drop=['skaterFullName','rrRank','playerId','seasonId','goalieFullName']
+        #test_y = masterTesting['rrRank']
+
+    test_x = masterTesting
+    for column in to_drop:
+        if column in test_x.columns:
+            test_x = test_x.drop(columns=column)
 
     pred_y1 = model.predict(test_x)
     predictions = pd.Series(pred_y1)
@@ -219,11 +258,17 @@ def testModel(testing_year=client.edge.skater_landing(season='20252026')['season
 
     if ranks == False:      
         print(f'---PREDICTION FOR TOP 1 RECIPIENT OF {displayAward} OF THE {testing_year} SEASON---')
-        print(show['skaterFullName'], show['goals'], show['rrWinner'], show['predictions'])                 #OUTPUTS HERE ARE BOUND TO CHANGE, ITS JUST GOALS AS A PLACEHOLDER FOR RR BUT WILL SHOW EVERYTHING IN THE FULL UI
+        if displayAward != "Vezina Trophy":
+            print(show['skaterFullName'], show['goals'], show['rrWinner'], show['predictions'])                 #OUTPUTS HERE ARE BOUND TO CHANGE, ITS JUST GOALS AS A PLACEHOLDER FOR RR BUT WILL SHOW EVERYTHING IN THE FULL UI
+        else:
+            print(show['goalieFullName'], show['goals'], show['rrWinner'], show['predictions'])       
         print(f'---PREDICTION FOR TOP 1 RECIPIENT OF {displayAward} OF THE {testing_year} SEASON---')
     else:
         print(f'---PREDICTION FOR TOP 3 RECIPIENTS OF {displayAward} OF THE {testing_year} SEASON---')
-        print(show['skaterFullName'], show['goals'], show['rrRank'], show['predictions'])
+        if displayAward != "Vezina Trophy":
+            print(show['skaterFullName'], show['goals'], show['rrRank'], show['predictions'])
+        else: 
+            print(show['goalieFullName'], show['goals'], show['rrRank'], show['predictions'])
         print(f'---PREDICTION FOR TOP 3 RECIPIENTS OF {displayAward} OF THE {testing_year} SEASON---')
 
     return show

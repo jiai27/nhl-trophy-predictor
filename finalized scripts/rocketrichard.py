@@ -127,8 +127,8 @@ def trainModel():
         train_x = masterTraining.drop(columns=['skaterFullName','rrWinner','playerId','seasonId'])
         train_y = masterTraining['rrWinner']
     else:
-        train_x = masterTesting.drop(columns=['skaterFullName','rrRank','playerId','seasonId'])
-        train_y = masterTesting['rrRank']
+        train_x = masterTraining.drop(columns=['skaterFullName','rrRank','playerId','seasonId'])
+        train_y = masterTraining['rrRank']
 
     model.fit(train_x, train_y)
     return

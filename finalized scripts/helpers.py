@@ -128,7 +128,7 @@ def fetchSkaterStats(year, csv=False, edge = False, versionA = False):
         return df
     
     
-def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False, versionA = False):       #modified version of labelwinners for rr2
+def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False, versionA = False, vezina = False):       #modified version of labelwinners for rr2
     '''
     purpose:    fetches a dataset of skaters and adds two columns: average TOI (extra feature) and either rrWinner or rrRank (target features) 
     parameters: -year (string) of a valid RR winner year; in yyyy or yyyyyyyy format
@@ -150,50 +150,66 @@ def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False,
         raise SyntaxError("requires yyyy or yyyyyyyy format of season year")
     
     if edge == True:
-        csv_path = f"../data/api/EDGEstats/skaters/skatersEDGE{year_interval}.csv"
+        if vezina == False:
+            csv_path = f"../data/api/EDGEstats/skaters/skatersEDGE{year_interval}.csv"
 
-        edge_df = pd.read_csv(csv_path)    
-        if versionA == True:      
-            regularDf = fetchSkaterStats(year=year, csv=False, edge=False, versionA=True)     #then combine it with regular GSS
-        else:
-            regularDf = fetchSkaterStats(year=year, csv=False, edge=False)
-        edge_df = regularDf.merge(edge_df)
-        #print("1: ",df.columns())
-        '''
-        if versionA == True:            #drop the additional columns
-            edge_df = edge_df.drop(columns=[
-                'Behind the Net Shots',
-                        'Beyond Red Line Shots',
-                        'Center Point Shots',
-                        'Crease Shots',
-                        'High Slot Shots',
-                        'L Circle Shots',
-                        'L Corner Shots',
-                        'L Net Side Shots',
-                        'L Point Shots',
-                        'Low Slot Shots',
-                        'Offensive Neutral Zone Shots',
-                        'Outside L Shots',
-                        'Outside R Shots',
-                        'R Circle Shots',
-                        'R Corner Shots',
-                        'R Net Side Shots',
-                        'R Point Shots'
-                        ]
-            )
-        '''
+            edge_df = pd.read_csv(csv_path)    
+            if versionA == True:      
+                regularDf = fetchSkaterStats(year=year, csv=False, edge=False, versionA=True)     #then combine it with regular GSS
+            else:
+                regularDf = fetchSkaterStats(year=year, csv=False, edge=False)
+            edge_df = regularDf.merge(edge_df)
+            #print("1: ",df.columns())
+            '''
+            if versionA == True:            #drop the additional columns
+                edge_df = edge_df.drop(columns=[
+                    'Behind the Net Shots',
+                            'Beyond Red Line Shots',
+                            'Center Point Shots',
+                            'Crease Shots',
+                            'High Slot Shots',
+                            'L Circle Shots',
+                            'L Corner Shots',
+                            'L Net Side Shots',
+                            'L Point Shots',
+                            'Low Slot Shots',
+                            'Offensive Neutral Zone Shots',
+                            'Outside L Shots',
+                            'Outside R Shots',
+                            'R Circle Shots',
+                            'R Corner Shots',
+                            'R Net Side Shots',
+                            'R Point Shots'
+                            ]
+                )
+            '''
 
-        df = edge_df
+            df = edge_df
+        else:           #if vezina is true, label winners on goalies only
+            csv_path = f"../data/api/EDGEstats/goalies/goaliesEDGE{year_interval}.csv"
+            edge_df = pd.read_csv(csv_path)
+            regularDf = fetchGoalieStats(year=year, csv=False, edge=False)
+            #print(f"EDGE goalies: {edge_df.shape}, regular goalies: {regularDf.shape}")
+            edge_df = regularDf.merge(edge_df,how="inner")
+            df = edge_df
+            
 
     else:
-        csv_path = f"../data/api/skaters/skaters{year_interval}.csv"
+        if vezina == False:
+            csv_path = f"../data/api/skaters/skaters{year_interval}.csv"
+        else:
+            csv_path = f"../data/api/goalies/goalies{year_interval}.csv"
         df = pd.read_csv(csv_path)
 
-    #print("2: ",df.columns())
+    #print("2: ",df.columns)
 
     #add averageTOI
     df['averageTOI'] = np.zeros(df.shape[0])
-    df['averageTOI'] = (df['timeOnIcePerGame']/60)
+    if vezina == False:
+        df['averageTOI'] = (df['timeOnIcePerGame']/60)
+    else:
+        df['averageTOI'] = (df['timeOnIce']/60)
+
     startYear = year_interval[:4]               #get the first year in this season's year interval
 
     #add rr Winner ONLY
@@ -209,6 +225,7 @@ def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False,
 
     #add rr finalists
     else:
+        print("adding finalists")
         df['rrRank'] = np.zeros(df.shape[0])      #create a new column for ranking
         for first in first_ids:
             season_year = first[0]
@@ -233,6 +250,13 @@ def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False,
             if season_year == startYear:
                 finalist = third[1]
                 df.loc[df['playerId'] == int(finalist), 'rrRank'] = 3
+
+    #print("goalie: ", df.columns,df)
+    #if rank == False:
+    #    print(df['rrWinner'].to_string())
+    #else:
+    #    print(df['rrRank'].to_string())
+
     return df
 
 
