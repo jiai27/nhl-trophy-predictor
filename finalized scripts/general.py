@@ -101,9 +101,16 @@ def predictAward(): #<- this is a function moreso for the general pipeline
         print(f"Predicting Winner for the {yearToTest} NHL Season...")
 
     if award_chosen == 'vezina trophy':
-        spliceSets(yearToTest, vezina = True)
+        spliceSets(yearToTest, mode="vezina")
         trainModel()
         testModel(yearToTest)
+
+    elif award_chosen == 'hart memorial trophy':
+        spliceSets(yearToTest, mode="hart")
+        trainModel()
+        testModel(yearToTest)
+
+    
 
     else:
         spliceSets(yearToTest)                        #good now
@@ -132,7 +139,7 @@ def getStandingsIds(award_name):
 
     return
 
-def spliceSets(testingYear=client.edge.skater_landing(season='20252026')['seasonsWithEdgeStats'][-1]['id'], withEdge = True, vezina = False):
+def spliceSets(testingYear=client.edge.skater_landing(season='20252026')['seasonsWithEdgeStats'][-1]['id'], withEdge = True, mode="regular"):
     '''
     purpose:    splits training and testing sets either w/ or w/o edge stats
     parameters: 
@@ -151,16 +158,24 @@ def spliceSets(testingYear=client.edge.skater_landing(season='20252026')['season
             currentEDGEszns.append(szn['id'])
         
         for year in currentEDGEszns:
-            if vezina == False:
+            if mode == "regular":
                 if ranks==True:
-                    modifiedDf = labelWinners(year=str(year)[:4], first_ids=first_ids, second_ids=second_ids, third_ids=third_ids, rank=True, edge=True,vezina=False)
+                    modifiedDf = labelWinners(year=str(year)[:4], first_ids=first_ids, second_ids=second_ids, third_ids=third_ids, rank=True, edge=True)
                 else:
-                    modifiedDf = labelWinners(year=str(year)[:4], first_ids=first_ids, second_ids=second_ids, third_ids=third_ids, rank=False, edge=True,vezina=False)
-            else:
+                    modifiedDf = labelWinners(year=str(year)[:4], first_ids=first_ids, second_ids=second_ids, third_ids=third_ids, rank=False, edge=True)
+            elif mode == "vezina":
                 if ranks==True:
-                    modifiedDf = labelWinners(year=str(year)[:4], first_ids=first_ids, second_ids=second_ids, third_ids=third_ids, rank=True, edge=True, vezina=True)
+                    modifiedDf = labelWinners(year=str(year)[:4], first_ids=first_ids, second_ids=second_ids, third_ids=third_ids, rank=True, edge=True, mode="vezina")
                 else:
-                    modifiedDf = labelWinners(year=str(year)[:4], first_ids=first_ids, second_ids=second_ids, third_ids=third_ids, rank=False, edge=True, vezina=True)
+                    modifiedDf = labelWinners(year=str(year)[:4], first_ids=first_ids, second_ids=second_ids, third_ids=third_ids, rank=False, edge=True, mode="vezina")
+            elif mode == "hart":
+                #evaluate goalies and skaters separately
+
+                if ranks==True:
+                    modifiedDf = labelWinners(year=str(year)[:4], first_ids=first_ids, second_ids=second_ids, third_ids=third_ids, rank=True, edge=True, mode="hart")
+                else:
+                    modifiedDf = labelWinners(year=str(year)[:4], first_ids=first_ids, second_ids=second_ids, third_ids=third_ids, rank=False, edge=True, mode="hart")
+
           
             for column in to_drop:
                 if column in modifiedDf.columns:
@@ -169,10 +184,12 @@ def spliceSets(testingYear=client.edge.skater_landing(season='20252026')['season
             feature_set = modifiedDf
             #(f"before dropna for {year}", feature_set.shape)
             #print(feature_set.loc[feature_set.isna().any(axis=1)])
-            if vezina == False:
+            if mode == "regular":        #typical prediction
                 feature_set = feature_set.dropna()
-            else:
+            elif mode == "vezina":                      #if vezina
                 feature_set = feature_set.fillna(0)     #set all NaNs to 0
+
+
             feature_set.loc[feature_set['shootsCatches'] == "L", 'shootsCatches'] = 0    #encode L -> 0 to fit model
             feature_set.loc[feature_set['shootsCatches'] == "R", 'shootsCatches'] = 1    #encode R -> 1 to fit model
             #print(f"after dropna for {year}: ",feature_set.shape)
@@ -181,6 +198,19 @@ def spliceSets(testingYear=client.edge.skater_landing(season='20252026')['season
                 testing_sets.append(feature_set)
             else:
                 training_sets.append(feature_set)
+
+            ''' -- works
+            d = dtale.show(feature_set)
+            d.open_browser()
+            
+            # 2. Prevent the terminal script from instantly closing
+            print("D-Tale is running. Press Ctrl+C in this terminal to exit.")
+            try:
+                while True:
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                print("Stopping server...")
+            '''
 
         for train in training_sets:
             masterTraining = pd.concat([masterTraining, train])

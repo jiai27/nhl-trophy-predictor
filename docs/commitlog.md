@@ -1,114 +1,77 @@
 ## This document will contain all notes about the commit it is apart of and ONLY that commit
 
 ## Decisions/Comments/Notes regarding the development of general.py
-- 08/11/26
+- 08/13/26
     - Thoughts before implementation
-        - The Previous "Bug"
-            - a couple commits ago, I found a very major bug in rocketrichard.py which eventually got carried to general.py where in the functions trainModel() and testModel(), if I were to predict top 3 on an award, it would train on the masterTesting feature set rather than masterTraining. for top 1, it would train on masterTraining as intended
-            - this wasn't noticed as it didn't raise any errors, but rather delivered on really good prediction which surprised me, especially for when I tested the optimal Rocket Richard Prediction Model on the Art Ross top 3 predictions, it had 100% accuracy which was suspicious. 
-            - it was only right before committing the previous commit to this one where I noticed this bug, it'd explain why when testing on most of the models, the top 3 predictions consistently outperformed the top 1 prediction
-            - **In simple terms, the previous prediction model trained exactly on the test set (aka the season it was tasked to predict on) rather than the remaining seasons it wasn't supposed to predict on, meaning the model did not overfit or underfit like crazy but rather "had the answers to the test memorized when it took the test", which would explain why it did so well, defeating the whole purpose of "predicting" the winner(s)**
-            - Unfortunately what this now means is I'll have to go back and re-test on Rocket Richard, Art Ross, Selke and Hart trophies before I move onto developing the Vezina prediction exclusive to goalies
-            - While I did make the bug fix in rocketrichard.py, all subsequent testing will be done using general.py since its just so much quicker
-        - Selke and Vezina prediction
-            - despite the major bug mentioned earlier, the Selke trophy prediction itself was already awful, I figured that this is more likely due to the feature set being a lot more offensive minded, which is why it didn't do too badly on the rocket richard award which favors the highest goals scored
-            - The Selke Trophy itself is awarded to "the forward who best excels in the defensive aspects of the game", which of course the feature set used for the Rocket Richard award wouldn't give it good enough description of defensive play, so this'll be accounted for on that specific prediction
-            - The Vezina Trophy is exclusive only to goalies, so it'll also be having its own prediction feature set and scripts
-            - another thing to note is that The Hart Trophy can include skaters AND goalies, example being 2024-2025 Hart winner Connor Hellebuyck, so the Hart Trophy will also be adapted to account for this
+        - Selke Prediction Development
+            - some research indicates that good defensive play is better determined by stats like xGA/60 (expected goals against per 60), HDCA/60 (high danger changes against per 60), Rel xGA/60 (relative expected goals against) all of which are not official stats recorded by the NHL
+            - all stats recommended:
+                - xGA/60
+                - CA/60
+                - SCA/60
+                - HDCCA/60
+                - GA/60
+            - people have found that traditional stats such as plus/minus aren't as effective because:
+                - "a guy can be +2 in 20 minutes TOI or in 2000 minutes TOI and their stats will look the same"
+            - this leads me to look to moneypuck to get these stats from
+        - Hart Modifications
+            - before I begin implementing modifications to the Hart Trophy predictions, I feel that including some of the stats from moneypuck that i'm already incorporating for the Selke prediction would probably be helpful as well
+            - additionally I'll have to evaluate skaters and goalies separately, before predicting them because their feature sets are vastly different
+            - my first priority will be incorporating goalies in general though, so my first idea is just throw them in the same training/testing sets, issue is this'll create a large patch of NaN values in both the goalies and skaters sections, so I'll first try to just zero them out to see if it'll do anything 
 
     - During implementation
+        - Selke Redesign of Feature Set
+        - Including Goalies in Hart Prediction
+            - 08/30/26
+                - note: I've been on a trip from Aug 21-31, so progress was obviously halted
+                - had to download a library (D-tale) to view the fully combined dataframe of the goalies and skaters
+                - all NaN values have been set to 0 for respective skater and goalie stats
+                - the feature set now includes skaters and goalies, so this box has been checked, but the goalie performance doesn't seem to be evaluated much at all, now I must incorporate the aforementioned stats
+                - I have added all publicly available moneypuck files of skates and goalies from 2021-present
+                - the process i'm thinking moving forward is:
+                - split the goalie and skater dataframes and evaluate them separately
+                - after this split is made, make changes to the dataframes with newfound moneypuck info
+                - WHEN predicting separately, take the top skaters and top goalies then evaluate their overall value ?
+            - 10/24/26
+                - lots of time has passed due to Winter Term 2026, this goal of re-testing on HART and SELKE predictions will be added to a separate branch, main branch will be untouched, then a third branch will be created to get a front-end of this predictor working
+
+        
         - Re-Testing (all results are shortened for clarity)
-            - Rocket Richard Retest
-                - 2021-2022
-                    - top1: (1/4 correct) -> **goals was highest feature**
-                    - top3  (1/4 correct, 1/4 was in the true top 3) -> outside L shots was highest feature
+            - Hart Trophy Retest (can now include goalies)
+                - 2021-2022 
+                    - top1 
+                    - top3 
                 - 2022-2023
-                    - top1  (0/1 correct) -> **goals was highest feature** (3.25e-01; very low)
-                    - top3  (0/5 correct but 2/5 were in the true top 3) -> gamesPlayed was highest feature
+                    - top1 
+                    - top3 
                 - 2023-2024
-                    - top1  (1/2 correct) -> **goals was highest feature**
-                    - top3  (0/7 correct but 2/5 were in the true top 3) -> gamesPlayed was highest feature
+                    - top1  
+                    - top3  
                 - 2024-2025
-                    - top1  (0/1 correct; didn't predict at all) -> **goals was highest feature**
-                    - top3  (0/2 correct but 1/2 were in the true top 3) -> assists was highest feature
+                    - top1  
+                    - top3: predicted nothing
                 - 2025-2026
-                    - top1  (1/1 correct) -> **goals (2nd) and evGoals was highest features**
-                    - top3  (1/5 correct, 1/5 was in the true top 3) -> assists was the highest feature
+                    - top1  
+                    - top3: 
                 - overall
-                    - top1: (3/9) -> 33% accurate
-                    - top3  (7/21) -> 33% accurate even with direct statistic
-                - it should be noted Rocket Richard is a direct statistic award (highest # of goals), so technically the tool can just take the players with the highest top 1/3 goals and predict it there, so the true accuracy here isn't as important
-
-            - Art Ross Retest
+                    - top1
+                    - top3
+            - Selke Trophy Retest (now with a better feature set for the sake of improving accuracy)
                 - 2021-2022
-                    - top1  (1/1 correct) -> outside R shots was highest feature
-                    - top3  (2/5 correct, but 3/5 were in the true top 3) -> R circle shots was highest feature
+                    - top1 
+                    - top3 
                 - 2022-2023
-                    - top1  (1/5 correct) -> outside R shots was highest feature
-                    - top3  (1/4 correct, but 2/4 were in the true top 3) -> top shot speed was highest feature
+                    - top1 
+                    - top3 
                 - 2023-2024
-                    - top1  (1/3 correct) -> outside R shots was highest feature
-                    - top3  (1/6 correct, but 3/6 were in the true top 3) -> top shot speed was highest feature
+                    - top1  
+                    - top3  
                 - 2024-2025
-                    - top1  (0/1 correct; nothing predicted) -> total distance skated was highest feature
-                    - top3  (0/3 correct; nothing predicted) -> top shot speed was highest feature
+                    - top1 
+                    - top3 
                 - 2025-2026
-                    - top1  (1/2 correct) -> outside R shots was highest feature, **points in the top 3 highest**
-                    - top3  (1/3 correct, but 3/3 were in the true top 3) -> outside L shots was highest feature
+                    - top1 
+                    - top3
                 - overall
-                    - top1: (4/11) -> 36.4% accurate
-                    - top3: (11/21) -> 52.4% accurate even with direct statistic
-                    - Art Ross is another award determined by direct statistic (highest total points)
-
-            - Selke Retest (without defensive adaptations made; see 'Selke and Vezina Prediction' above)
-                - 2021-2022
-                    - top1 (0/2 correct) -> outside L shots was highest feature
-                    - top3 (0/7 correct) -> evPoints was highest feature
-                - 2022-2023
-                    - top1 (0/6 correct) -> outside R shots was highest feature
-                    - top3 (0/20 correct, but 2/20 players were in the true top 3) -> ppPoints was highest feature
-                - 2023-2024
-                    - top1 (0/1 correct; nothing predicted) -> outside L shots was highest feature
-                    - top3 (0/5 correct, but 1/5 players were in the true top 3) -> skatingSpeed was highest feature
-                - 2024-2025
-                    - top1 (0/1 correct) -> plusMinus was highest feature
-                    - top3 (0/11 correct) -> evPoints was highest feature
-                - 2025-2026
-                    - top1 (1/2 correct) -> outside L shots was highest feature
-                    - top3 (1/6 correct, 1/6 were in the true top 3) -> skatingSpeed was highest feature
-                - overall
-                    - top1: (1/12) -> 8.3% accurate
-                    - top3  (1/49) -> 2.1% accurate
-                    - obviously the feature set for rocket richard and the same model used for the Selke award would suck, I'm not surprised it was this bad, but its useful to test and note of the highest features, plusMinus was eventually recorded as a highest feature which is a good sign
-        - Vezina Prediction Development
-            - small bug in the vezina trophy.csv where "Winner" isn't recognized as the 'winner' column, so had to change that typo
-            - the next error occurred when trainModel() is called, saying model.fit has no solutions (aka there's no labeled winners), so the spliceSets() function went through without errors but no winners were labeled because the functions called within spliceSets(); specifically labelWinners() doesn't account for goalies yet, only accesses the skaters files, so those necessary changes were made in labelWinners()
-            - Now, no errors are coming up for vezina testing but no predictions are coming out either
-            - 8/12/26
-            - the issues i've now found is that after some bug fixes in the helper.py file, not only do all training/testing sets for edge seasons get trimmed to 0 records due to .dropna(), but even before labelWinners is completed, very few goalies for some of the years are actually parsed, only the 2023-2024 and 2025-2026 seasons have full edge season csv files, something wrong occurred when I parsed them, so this issue traces back to models.ipynb
-            - fixed the API pagination bug in models.ipynb with AI, it should be noted the bug was essentially that df kept getting overwritten, so only the last page of pagination was added to the files, now going to check if general.py still drops everything due to an NaN value
-            - for whatever reason, ".dropna()" drops ALL goalie records, so I added a new change that sets NaN values to zero
-            - WORKS NOW
-            - overall the changes needed was: 
-                - fix typo of "Winner" to "winner" in vezina trophy.csv
-                - (used AI to assist this debug), use a fixed number of entries for pagination from the API when getting goalie EDGE stats, then update the EDGEstats/goalies csv files
-                - required adding a "vezina trophy" specific mode for some parts of spliceSets(), trainModel(), testModel() and formatEdgeStats()
-
-        - Vezina and Selke Testing
-            - Vezina Testing
-                - 2021-2022
-                    - top1 (1/6 correct) -> L Point Saves is the highest feature
-                    - top3 (1/16 correct, but 3/16 were in the actual top 3) -> goalSupportAvg was highest feature
-                - 2022-2023
-                    - top1 (1/1 correct) -> Behind the Net Saves was highest feature
-                    - top3 (1/4 correct, but 2/4 were in the actual top 3) -> goalSupportAvg was highest feature
-                - 2023-2024
-                    - top1  (0/1 correct; nothing predicted) -> wins was the highest feature
-                    - top3  (0/7 correct, but 1/7 were in the actual top 3) -> goalSupportAvg was highest feature
-                - 2024-2025
-                    - top1 (1/1 correct) -> Outside L Saves was highest feature
-                    - top3 (0/4 correct, but 2/4 were in the actual top 3) -> goalSupportAvg was highest feature
-                - 2025-2026
-                    - top1 (0/1 correct; nothing predicted) -> saves was the highest feature
-                    - top3 (0/3 correct; nothing predicted) -> goalSupportAvg was highest feature
-
+                    - top1
+                    - top3

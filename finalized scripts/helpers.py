@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 from nhlpy import NHLClient
 import ast
+import time
+import dtale
 
 #Global Vars:
 client = NHLClient()
@@ -128,7 +130,7 @@ def fetchSkaterStats(year, csv=False, edge = False, versionA = False):
         return df
     
     
-def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False, versionA = False, vezina = False):       #modified version of labelwinners for rr2
+def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False, versionA = False, mode="regular"):       #modified version of labelwinners for rr2
     '''
     purpose:    fetches a dataset of skaters and adds two columns: average TOI (extra feature) and either rrWinner or rrRank (target features) 
     parameters: -year (string) of a valid RR winner year; in yyyy or yyyyyyyy format
@@ -150,7 +152,7 @@ def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False,
         raise SyntaxError("requires yyyy or yyyyyyyy format of season year")
     
     if edge == True:
-        if vezina == False:
+        if mode == "regular":       #typical prediction
             csv_path = f"../data/api/EDGEstats/skaters/skatersEDGE{year_interval}.csv"
 
             edge_df = pd.read_csv(csv_path)    
@@ -159,55 +161,71 @@ def labelWinners(year, first_ids, second_ids, third_ids, rank=False, edge=False,
             else:
                 regularDf = fetchSkaterStats(year=year, csv=False, edge=False)
             edge_df = regularDf.merge(edge_df)
-            #print("1: ",df.columns())
-            '''
-            if versionA == True:            #drop the additional columns
-                edge_df = edge_df.drop(columns=[
-                    'Behind the Net Shots',
-                            'Beyond Red Line Shots',
-                            'Center Point Shots',
-                            'Crease Shots',
-                            'High Slot Shots',
-                            'L Circle Shots',
-                            'L Corner Shots',
-                            'L Net Side Shots',
-                            'L Point Shots',
-                            'Low Slot Shots',
-                            'Offensive Neutral Zone Shots',
-                            'Outside L Shots',
-                            'Outside R Shots',
-                            'R Circle Shots',
-                            'R Corner Shots',
-                            'R Net Side Shots',
-                            'R Point Shots'
-                            ]
-                )
-            '''
-
             df = edge_df
+
+        elif mode == "hart":    #if predicting the hart trophy, combine both goalie and skater sets, then zero out NaN values
+
+            #separates the goalie and skater dataframes
+            goalie_path = f"../data/moneypuck/goalies/goalies{year_interval}.csv"
+            skater_path = f"../data/moneypuck/skaters/skaters{year_interval}.csv"
+            edge_skater_path = f"../data/api/EDGEstats/skaters/skatersEDGE{year_interval}.csv"
+
+            skater_df = pd.read_csv(skater_path)
+            edge_skater_df = pd.read_csv(edge_skater_path)
+            full_skater_df = skater_df.merge(edge_skater_df)
+
+            goalie_df = pd.read_csv(goalie_path)
+
+
+            
+
+
+
         else:           #if vezina is true, label winners on goalies only
             csv_path = f"../data/api/EDGEstats/goalies/goaliesEDGE{year_interval}.csv"
             edge_df = pd.read_csv(csv_path)
             regularDf = fetchGoalieStats(year=year, csv=False, edge=False)
-            #print(f"EDGE goalies: {edge_df.shape}, regular goalies: {regularDf.shape}")
             edge_df = regularDf.merge(edge_df,how="inner")
             df = edge_df
             
 
-    else:
-        if vezina == False:
+    else:       #if no edge
+        if mode != "vezina":
             csv_path = f"../data/api/skaters/skaters{year_interval}.csv"
         else:
             csv_path = f"../data/api/goalies/goalies{year_interval}.csv"
         df = pd.read_csv(csv_path)
-
-    #print("2: ",df.columns)
-
+    
     #add averageTOI
     df['averageTOI'] = np.zeros(df.shape[0])
-    if vezina == False:
+    if mode == "regular":
         df['averageTOI'] = (df['timeOnIcePerGame']/60)
-    else:
+    elif mode == "hart":
+
+        #if the player is a skater
+        allSkaters = df.loc[df['positionCode'] != None]
+        allSkaters['averageTOI'] = (allSkaters['timeOnIcePerGame']/60)
+
+        '''
+        d = dtale.show(df)
+        d.open_browser()
+
+        # 2. Prevent the terminal script from instantly closing
+        print("D-Tale is running. Press Ctrl+C in this terminal to exit.")
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            print("Stopping server...")
+        '''
+
+
+        # if the player is a skater
+        # allSkaters = df.loc[df['positionCode'] != None]
+        # allSkaters['averageTOI'] = (allSkaters['timeOnIcePerGame']/60)
+
+
+    elif mode == "vezina":
         df['averageTOI'] = (df['timeOnIce']/60)
 
     startYear = year_interval[:4]               #get the first year in this season's year interval
